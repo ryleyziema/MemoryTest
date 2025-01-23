@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>记忆力挑战</title>
+    <style>
+        body {
+            margin: 0; /* 移除 body 默认 margin，实现全屏 */
+            overflow: hidden; /* 隐藏滚动条 */
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh; /* 设置 body 高度为视口高度，实现全屏 */
+            background-color: #f0f0f0;
+        }
+
+        #game-container {
+            text-align: center;
+        }
+
+        #level-indicators {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .level-indicator {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #ccc;
+            margin: 2px;
+            background-color: #eee;
+        }
+        .level-indicator.correct {
+            background-color: green;
+        }
+
+        .level-indicator.incorrect {
+            background-color: red;
+        }
+
+        #number-display {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        #input-area {
+            display: none; /* 初始隐藏输入区域 */
+            margin-bottom: 20px;
+        }
+        #result{
+            display: none;
+            font-size: 2em;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>记忆力挑战</h1>
+        <p>游戏规则：共20关，每关5秒记忆时间，记住屏幕上显示的数字。答对得分，总分1050分。得分840分以上为优秀。</p>
+        <button id="start-button">开始游戏</button>
+
+        <div id="level-indicators">
+            </div>
+
+        <div id="number-display"></div>
+        <div id="input-area">
+            <input type="number" id="user-input">
+            <button id="submit-button">提交</button>
+        </div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const levelIndicators = document.getElementById('level-indicators');
+        const numberDisplay = document.getElementById('number-display');
+        const inputArea = document.getElementById('input-area');
+        const userInput = document.getElementById('user-input');
+        const submitButton = document.getElementById('submit-button');
+        const startButton = document.getElementById('start-button');
+        const resultDiv = document.getElementById('result')
+
+        let currentLevel = 0;
+        let score = 0;
+        let timer;
+        let displayedNumber;
+
+        for(let i=0; i<20; i++){
+            const indicator = document.createElement('div');
+            indicator.className = 'level-indicator';
+            levelIndicators.appendChild(indicator);
+        }
+        const indicators = document.querySelectorAll('.level-indicator')
+
+        startButton.addEventListener('click', startGame);
+        submitButton.addEventListener('click', checkAnswer);
+
+        function startGame() {
+            startButton.style.display = 'none';
+            currentLevel = 0;
+            score = 0;
+            indicators.forEach(indicator => indicator.classList.remove('correct','incorrect'))
+            nextLevel();
+        }
+
+        function nextLevel() {
+            if (currentLevel >= 20) {
+                endGame();
+                return;
+            }
+            numberDisplay.textContent = generateRandomNumber(currentLevel + 1);
+            displayedNumber = numberDisplay.textContent;
+            inputArea.style.display = 'none';
+            numberDisplay.style.display = 'block';
+
+            timer = setTimeout(() => {
+                numberDisplay.style.display = 'none';
+                inputArea.style.display = 'block';
+                userInput.value = ''; // 清空输入框
+                userInput.focus(); // 聚焦输入框
+            }, 5000);
+        }
+
+        function checkAnswer() {
+            clearTimeout(timer);
+            const userAnswer = userInput.value;
+            if (userAnswer === displayedNumber) {
+                score += (currentLevel + 1) * 5;
+                indicators[currentLevel].classList.add('correct');
+            }else{
+                indicators[currentLevel].classList.add('incorrect');
+            }
+            currentLevel++;
+            nextLevel();
+        }
+
+        function generateRandomNumber(digits) {
+            let min = Math.pow(10, digits - 1);
+            let max = Math.pow(10, digits) - 1;
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function endGame(){
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = `游戏结束！你的总分是 ${score} 分。`;
+            if(score >= 840){
+                resultDiv.textContent += " 优秀！";
+                if(score >= 950){
+                    resultDiv.textContent += " 非常优秀！";
+                }
+            }
+            startButton.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
